@@ -149,7 +149,9 @@ without reading what came before or after?
 **Answer:**
 
 ```
-[PASTE THE FULL ANSWER, INCLUDING THE "Sources retrieved:" LINE]
+The right meal plan tier depends entirely on whether your building has a kitchen; people in Fenwick can go down a tier and cook two or three nights, while everyone else should get the middle tier (thread_meal_plan_tier.txt). The highest tier only makes sense if you eat three meals a day in the halls every single day (thread_meal_plan_tier.txt).
+
+Sources retrieved: thread_clubs.txt, thread_first_year_regret.txt, thread_meal_plan_tier.txt, thread_pass_fail.txt, thread_transfer_credits.txt
 ```
 
 **My relevance cutoff:** [YOUR NUMBER, e.g. 0.6 — the value you set in config.py]
@@ -163,18 +165,17 @@ without reading what came before or after?
 
      Milestone 4. -->
 
-| Question | In corpus? | Best distance |
-|---|---|---|
-| [QUESTION 1] | Yes | [0.000] |
-| [QUESTION 2] | Yes | [0.000] |
-| [QUESTION 3] | Yes | [0.000] |
-| [QUESTION 4] | Yes | [0.000] |
-| [QUESTION 5] | Yes | [0.000] |
-| [OUT_OF_SCOPE QUESTION 1] | No | [0.000] |
-| [OUT_OF_SCOPE QUESTION 2] | No | [0.000] |
-| [OUT_OF_SCOPE QUESTION 3] | No | [0.000] |
-| [OUT_OF_SCOPE QUESTION 4] | No | [0.000] |
-| [OUT_OF_SCOPE QUESTION 5] | No | [0.000] |
+Question	In corpus?	Best distance
+Which meal plan tier is right	Yes	[0.000]
+First winter here — what do I need?	Yes	[0.000]
+When should I start looking for a summer internship?	Yes	[0.000]
+Is the printing quota enough?	Yes	[0.000]
+Do transfer credits actually count toward the major?	Yes	[0.000]
+What is the capital of Mongolia?	No	[0.000]
+How do I change the oil in a diesel engine?	No	[0.000]
+Who won the 1994 World Cup?	No	[0.000]
+What is the recommended dosage of ibuprofen for a headache?	No	[0.000]
+How do I write a for loop in Rust?	No	[0.000]
 
 The in-corpus group's best distances ran from [LOW] to [HIGH], and the out-of-scope group's from [LOW] to [HIGH], so the gap sat between [X] and [Y]. I put the cutoff at [YOUR NUMBER] because [WHY THAT POINT IN THE GAP]. At that number the risk is [WHAT IT WOULD GET WRONG, e.g. refusing an in-corpus question that sits near the line].
 
