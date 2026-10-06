@@ -81,23 +81,39 @@ def fallback_split(
 
 
 def split_documents(documents: list[Document]) -> list[Chunk]:
-    """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
+ 
+    MAX_CHARS = 1000  # close a chunk once adding another paragraph would pass this
+    MIN_CHARS = 150   # a final chunk shorter than this is merged into the previous one
 
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
+    chunks: list[Chunk] = []
+    for doc in documents:
+        paras = [p.strip() for p in doc.text.split("\n\n") if p.strip()]
 
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
+        pieces: list[str] = []
+        current = ""
+        for p in paras:
+            if current and len(current) + len(p) + 2 > MAX_CHARS:
+                pieces.append(current)
+                current = p
+            else:
+                current = f"{current}\n\n{p}" if current else p
+        if current:
+            if pieces and len(current) < MIN_CHARS:
+                pieces[-1] += "\n\n" + current
+            else:
+                pieces.append(current)
 
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
-    """
-    return fallback_split(documents)
+        for i, piece in enumerate(pieces):
+            chunks.append(
+                Chunk(
+                    text=piece,
+                    source=doc.source,
+                    index=i,
+                    produced_by="chunker.py::split_documents",
+                )
+            )
+
+    return chunks
 
 
 def describe(chunks: list[Chunk]) -> str:
