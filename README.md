@@ -1,6 +1,6 @@
 # The Unofficial Guide
 
-<!-- Replace this line with your name and which corpus you picked. -->
+Robert Tenney — corpus: `advice_threads`
 
 > **This file is your submission.** Fill it in as you go — most sections get
 > written during the milestone that produces them, not at the end.
@@ -27,10 +27,18 @@
 
      Milestone 5. -->
 
+This project is a small question-answering system built on the `advice_threads`
+corpus. It indexes the documents, splits them into chunks, and answers a
+question by retrieving the closest chunks and passing only those to the model.
+It answers questions such as [ONE OR TWO EXAMPLE QUESTIONS FROM YOUR
+questions.py]. A relevance gate refuses to answer when nothing retrieved is
+close enough, returning "I don't have enough information about that," and every
+answer names the source files it came from.
+
 ## Chunking Strategy
 
-**Chunk size:**
-**Overlap:**
+**Chunk size:** up to 1000 characters (`MAX_CHARS`), built from whole paragraphs; a final chunk under 150 characters (`MIN_CHARS`) is merged into the one before it
+**Overlap:** none (0). Chunks break only at paragraph boundaries, so no sentence is ever cut in half
 
 <!-- What about YOUR documents made you pick these numbers? Short posts and
      long sectioned guides don't want the same chunking, and "800 seemed
@@ -42,55 +50,109 @@
 
      Milestone 3. -->
 
+The starter's fixed 800-character windows cut documents at arbitrary points
+and, on `advice_threads`, produced a 2-character chunk from the tail of a
+document that didn't divide evenly. My chunker (`chunker.py::chunk_documents`)
+splits on blank lines and packs whole paragraphs together, so every chunk starts
+and ends at a paragraph boundary, and the merge rule means no fragment is left
+behind. [ONE SENTENCE ON WHAT YOU NOTICED WHEN YOU READ THE advice_threads
+DOCUMENTS IN MILESTONE 1 — e.g. how long they are and how replies are
+separated — AND WHY THAT MADE 1000/150 A GOOD FIT. If you changed these
+numbers, say so here.]
+
 ## Sample Chunks
 
-<!-- Five chunks, pasted as text. Label each one and name the file it came from
-     AND the function that produced it — the grader checks your code against
-     what you claim here.
+======================================================================
+Chunk 1  |  source: thread_bike_commute.txt#0  |  produced by: chunker.py::chunk_documents
+======================================================================
+THREAD: Is a bike worth it for a 20 minute walk commute?
 
-     `python app.py chunks -n 5` prints all three for you. Copy them straight
-     across.
+--- reply 1 (14 votes) ---
+Yeah. Cuts an 18 minute walk to about 6. The thing nobody mentions is storage — covered bike parking exists at three buildings and is full by 9am at all three.
 
-     Milestone 3. -->
+--- reply 2 (9 votes) ---
+Counterpoint, I sold mine. Between November and March the paths are either icy or salted and salt destroys a drivetrain in one season.
 
-**Chunk 1** — source: `` — produced by: ``
+--- reply 3 (22 votes) ---
+Both true. I keep a cheap bike for September to November and walk the rest of the year. Total cost was about $120 for the bike and I don't care what happens to it.
 
-```
-```
+--- reply 4 (5 votes) ---
+If you do get one, the campus does free registration and it's the only reason I got mine back after it was taken.
 
-**Chunk 2** — source: `` — produced by: ``
+======================================================================
+Chunk 2  |  source: thread_first_gen.txt#0  |  produced by: chunker.py::chunk_documents
+======================================================================
+THREAD: Anything specific for first-generation students?
 
-```
-```
+--- reply 1 (33 votes) ---
+The advising office has a specific programme and it is genuinely good, but it is opt-in and badly publicised. Ask for it by name.
 
-**Chunk 3** — source: `` — produced by: ``
+--- reply 2 (41 votes) ---
+The thing I'd say: the unwritten rules are the hard part, not the coursework. Ask about the unwritten rules explicitly. People are happy to explain them and nobody volunteers them.
 
-```
-```
+--- reply 3 (16 votes) ---
+Emergency fund for textbooks and travel exists and is not means-tested beyond a short form.
 
-**Chunk 4** — source: `` — produced by: ``
+======================================================================
+Chunk 3  |  source: thread_laptop_specs.txt#0  |  produced by: chunker.py::chunk_documents
+======================================================================
+THREAD: How much laptop do I actually need for CS courses?
 
-```
-```
+--- reply 1 (31 votes) ---
+Less than the recommended spec page says. 16GB of RAM is the one number worth paying for; everything else you'll never notice.
 
-**Chunk 5** — source: `` — produced by: ``
+--- reply 2 (18 votes) ---
+Adding: the lab machines exist and are better than anything you'll buy. For the heavy assignments people just use those.
 
-```
-```
+--- reply 3 (12 votes) ---
+I did two years on an 8GB machine and it was fine until the last project, at which point it very much wasn't. 16 is the answer.
+
+======================================================================
+Chunk 4  |  source: thread_office_hours_etiquette.txt#0  |  produced by: chunker.py::chunk_documents
+======================================================================
+THREAD: Is it weird to go to office hours with no specific question?
+
+--- reply 1 (44 votes) ---
+No, and this is the single most common thing first years get wrong. 'I'm following the lectures but I don't feel like I understand the shape of it' is a completely normal thing to say.
+
+--- reply 2 (29 votes) ---
+They're usually empty. You are doing the instructor a favour by turning up.
+
+--- reply 3 (18 votes) ---
+If it helps, treat it as a standing appointment. Go every week for a month and it stops feeling like a thing.
+
+======================================================================
+Chunk 5  |  source: thread_professor_email.txt#0  |  produced by: chunker.py::chunk_documents
+======================================================================
+THREAD: Do professors actually answer email?
+
+--- reply 1 (21 votes) ---
+Varies enormously. General rule I've found: if the syllabus states a response window, it's honoured. If it doesn't, assume 48 hours and don't panic before then.
+
+--- reply 2 (33 votes) ---
+Office hours are dramatically more effective than email for anything that takes more than two sentences to answer. They're also usually empty.
+
+--- reply 3 (15 votes) ---
+Empty office hours is the biggest unused resource here and I say that having wasted a year not going.
+
+For each one, ask: could someone answer a question using only this,
+without reading what came before or after?
+
 
 ## Sample Answer
 
 <!-- One complete question and answer, pasted as text, with the source line
      visible. Milestone 4. -->
 
-**Question:**
+**Question:** [YOUR QUESTION]
 
 **Answer:**
 
 ```
+[PASTE THE FULL ANSWER, INCLUDING THE "Sources retrieved:" LINE]
 ```
 
-**My relevance cutoff:**
+**My relevance cutoff:** [YOUR NUMBER, e.g. 0.6 — the value you set in config.py]
 
 <!-- The number you set in config.py, and how you got there.
 
@@ -103,7 +165,18 @@
 
 | Question | In corpus? | Best distance |
 |---|---|---|
-|  |  |  |
+| [QUESTION 1] | Yes | [0.000] |
+| [QUESTION 2] | Yes | [0.000] |
+| [QUESTION 3] | Yes | [0.000] |
+| [QUESTION 4] | Yes | [0.000] |
+| [QUESTION 5] | Yes | [0.000] |
+| [OUT_OF_SCOPE QUESTION 1] | No | [0.000] |
+| [OUT_OF_SCOPE QUESTION 2] | No | [0.000] |
+| [OUT_OF_SCOPE QUESTION 3] | No | [0.000] |
+| [OUT_OF_SCOPE QUESTION 4] | No | [0.000] |
+| [OUT_OF_SCOPE QUESTION 5] | No | [0.000] |
+
+The in-corpus group's best distances ran from [LOW] to [HIGH], and the out-of-scope group's from [LOW] to [HIGH], so the gap sat between [X] and [Y]. I put the cutoff at [YOUR NUMBER] because [WHY THAT POINT IN THE GAP]. At that number the risk is [WHAT IT WOULD GET WRONG, e.g. refusing an in-corpus question that sits near the line].
 
 ## How I Used AI
 
@@ -116,13 +189,13 @@
 
      Milestone 5. -->
 
-**1.**
+**1.** I asked Claude where my replacement chunker should go in `chunker.py`. It first gave me a function that took one string of text, which didn't match the starter, where `split_documents` takes a list of `Document` objects and returns `Chunk` objects. After I uploaded `chunker.py`, it rewrote the function to loop over the documents and build `Chunk` objects with `produced_by="chunker.py::split_documents"`. I kept the original docstring and the rest of the file and replaced only the function body. [ADD WHAT YOU CHANGED YOURSELF, e.g. your own MAX_CHARS/MIN_CHARS values.]
 
-**2.**
+**2.** I asked Claude to rename `split_documents` to `chunk_documents` in `app.py`. It changed the four places the name appears (the import and call in `cmd_index` and in `cmd_chunks`) and warned me that `chunker.py` had to be renamed too or the imports would fail. I made the matching rename in `chunker.py`, including the `produced_by` string, so this README names the right function. [EDIT TO MATCH WHAT YOU ACTUALLY DID.]
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never
-     claims earns nothing.
+     claims earns nothing.python
      ───────────────────────────────────────────────────────────────────────── -->
 
 ---

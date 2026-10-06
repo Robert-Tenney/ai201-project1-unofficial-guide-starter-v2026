@@ -32,7 +32,7 @@ def cmd_corpora(args):
 
 def cmd_index(args):
     from ingest import load_documents, describe as describe_docs
-    from chunker import split_documents, describe as describe_chunks
+    from chunker import chunk_documents, describe as describe_chunks
     from store import build_index
 
     corpus = args.corpus or config.CORPUS
@@ -43,7 +43,7 @@ def cmd_index(args):
     documents = load_documents(corpus)
     print(f"  loaded   {describe_docs(documents)}")
 
-    chunks = split_documents(documents)
+    chunks = chunk_documents(documents)
     print(f"  chunked  {describe_chunks(chunks)}")
 
     print(f"  embedding {len(chunks)} chunks (first run downloads the model)...")
@@ -101,9 +101,9 @@ def _chunks_at(chunks, spec):
 def cmd_chunks(args):
     """Milestone 3. Print chunks so you can read them and paste them."""
     from ingest import load_documents
-    from chunker import split_documents
+    from chunker import chunk_documents
 
-    chunks = split_documents(load_documents(args.corpus or config.CORPUS))
+    chunks = chunk_documents(load_documents(args.corpus or config.CORPUS))
 
     if args.from_doc:
         sample = _chunks_from_doc(chunks, args.from_doc)
