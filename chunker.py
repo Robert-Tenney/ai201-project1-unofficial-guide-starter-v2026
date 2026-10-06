@@ -80,7 +80,7 @@ def fallback_split(
     return chunks
 
 
-def split_documents(documents: list[Document]) -> list[Chunk]:
+def chunk_documents(documents: list[Document]) -> list[Chunk]:
  
     MAX_CHARS = 1000  # close a chunk once adding another paragraph would pass this
     MIN_CHARS = 150   # a final chunk shorter than this is merged into the previous one
@@ -109,7 +109,7 @@ def split_documents(documents: list[Document]) -> list[Chunk]:
                     text=piece,
                     source=doc.source,
                     index=i,
-                    produced_by="chunker.py::split_documents",
+                    produced_by="chunker.py::chunk_documents",
                 )
             )
 
