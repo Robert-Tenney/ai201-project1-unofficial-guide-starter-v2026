@@ -22,7 +22,7 @@ python-dotenv>=1.0,<1.2
 # Unit 2's "try a second embedding model" option is the one thing that does
 # need the heavier route. It is an optional install, not a requirement:
 #     pip install 'sentence-transformers>=3.4,<3.5'
-chromadb>=0.6,<0.7
+chromadb>=1.5.9
 
 # Not used directly. This is chromadb's telemetry dependency, and chromadb
 # declares it as `posthog>=2.4.0` with NO upper bound. posthog 7.x changed a
