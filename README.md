@@ -30,15 +30,15 @@ Robert Tenney — corpus: `advice_threads`
 This project is a small question-answering system built on the `advice_threads`
 corpus. It indexes the documents, splits them into chunks, and answers a
 question by retrieving the closest chunks and passing only those to the model.
-It answers questions such as [ONE OR TWO EXAMPLE QUESTIONS FROM YOUR
-questions.py]. A relevance gate refuses to answer when nothing retrieved is
+It answers practical newcomer questions such as "Which meal plan tier is
+right?" and "When should I start looking for a summer internship?". A relevance gate refuses to answer when nothing retrieved is
 close enough, returning "I don't have enough information about that," and every
 answer names the source files it came from.
 
 ## Chunking Strategy
 
 **Chunk size:** up to 1000 characters (`MAX_CHARS`), built from whole paragraphs; a final chunk under 150 characters (`MIN_CHARS`) is merged into the one before it
-**Overlap:** none (0). Chunks break only at paragraph boundaries, so no sentence is ever cut in half
+**Overlap:** none (0). Chunks break at paragraph boundaries; a paragraph over 1000 characters is split at line breaks, then sentence ends, so nothing is cut mid-sentence
 
 <!-- What about YOUR documents made you pick these numbers? Short posts and
      long sectioned guides don't want the same chunking, and "800 seemed
@@ -53,18 +53,32 @@ answer names the source files it came from.
 The starter's fixed 800-character windows cut documents at arbitrary points
 and, on `advice_threads`, produced a 2-character chunk from the tail of a
 document that didn't divide evenly. My chunker (`chunker.py::chunk_documents`)
-splits on blank lines and packs whole paragraphs together, so every chunk starts
-and ends at a paragraph boundary, and the merge rule means no fragment is left
-behind. [ONE SENTENCE ON WHAT YOU NOTICED WHEN YOU READ THE advice_threads
-DOCUMENTS IN MILESTONE 1 — e.g. how long they are and how replies are
-separated — AND WHY THAT MADE 1000/150 A GOOD FIT. If you changed these
-numbers, say so here.]
+splits on blank lines and packs whole paragraphs together, so chunks start and
+end at paragraph boundaries (or, for an oversized paragraph, at a line or
+sentence boundary), and the merge rule means no fragment is left behind.
+
+Reading the `advice_threads` files, each thread opens with a `THREAD:` title and
+every reply sits under its own `--- reply N (X votes) ---` marker, separated by
+blank lines. The threads I sampled run well under 1000 characters, so each one
+comes out as a single chunk (every sample chunk below is `#0` of its file).
+Keeping a thread whole keeps the replies that disagree with each other in the
+same chunk, which is where the answer lives in this corpus. [CONFIRM this matches
+what you saw when you read the files, and say so here if you changed 1000/150.]
 
 ## Sample Chunks
 
-======================================================================
-Chunk 1  |  source: thread_bike_commute.txt#0  |  produced by: chunker.py::chunk_documents
-======================================================================
+<!-- Five chunks, pasted as text. Label each one and name the file it came from
+     AND the function that produced it — the grader checks your code against
+     what you claim here.
+
+     `python app.py chunks -n 5` prints all three for you. Copy them straight
+     across.
+
+     Milestone 3. -->
+
+**Chunk 1** — source: `thread_bike_commute.txt` — produced by: `chunker.py::chunk_documents`
+
+```
 THREAD: Is a bike worth it for a 20 minute walk commute?
 
 --- reply 1 (14 votes) ---
@@ -78,10 +92,11 @@ Both true. I keep a cheap bike for September to November and walk the rest of th
 
 --- reply 4 (5 votes) ---
 If you do get one, the campus does free registration and it's the only reason I got mine back after it was taken.
+```
 
-======================================================================
-Chunk 2  |  source: thread_first_gen.txt#0  |  produced by: chunker.py::chunk_documents
-======================================================================
+**Chunk 2** — source: `thread_first_gen.txt` — produced by: `chunker.py::chunk_documents`
+
+```
 THREAD: Anything specific for first-generation students?
 
 --- reply 1 (33 votes) ---
@@ -92,10 +107,11 @@ The thing I'd say: the unwritten rules are the hard part, not the coursework. As
 
 --- reply 3 (16 votes) ---
 Emergency fund for textbooks and travel exists and is not means-tested beyond a short form.
+```
 
-======================================================================
-Chunk 3  |  source: thread_laptop_specs.txt#0  |  produced by: chunker.py::chunk_documents
-======================================================================
+**Chunk 3** — source: `thread_laptop_specs.txt` — produced by: `chunker.py::chunk_documents`
+
+```
 THREAD: How much laptop do I actually need for CS courses?
 
 --- reply 1 (31 votes) ---
@@ -106,10 +122,11 @@ Adding: the lab machines exist and are better than anything you'll buy. For the 
 
 --- reply 3 (12 votes) ---
 I did two years on an 8GB machine and it was fine until the last project, at which point it very much wasn't. 16 is the answer.
+```
 
-======================================================================
-Chunk 4  |  source: thread_office_hours_etiquette.txt#0  |  produced by: chunker.py::chunk_documents
-======================================================================
+**Chunk 4** — source: `thread_office_hours_etiquette.txt` — produced by: `chunker.py::chunk_documents`
+
+```
 THREAD: Is it weird to go to office hours with no specific question?
 
 --- reply 1 (44 votes) ---
@@ -120,10 +137,11 @@ They're usually empty. You are doing the instructor a favour by turning up.
 
 --- reply 3 (18 votes) ---
 If it helps, treat it as a standing appointment. Go every week for a month and it stops feeling like a thing.
+```
 
-======================================================================
-Chunk 5  |  source: thread_professor_email.txt#0  |  produced by: chunker.py::chunk_documents
-======================================================================
+**Chunk 5** — source: `thread_professor_email.txt` — produced by: `chunker.py::chunk_documents`
+
+```
 THREAD: Do professors actually answer email?
 
 --- reply 1 (21 votes) ---
@@ -134,10 +152,7 @@ Office hours are dramatically more effective than email for anything that takes 
 
 --- reply 3 (15 votes) ---
 Empty office hours is the biggest unused resource here and I say that having wasted a year not going.
-
-For each one, ask: could someone answer a question using only this,
-without reading what came before or after?
-
+```
 
 ## Sample Answer
 
@@ -165,17 +180,18 @@ Sources retrieved: thread_clubs.txt, thread_first_year_regret.txt, thread_meal_p
 
      Milestone 4. -->
 
-Question	In corpus?	Best distance
-Which meal plan tier is right	Yes	[0.000]
-First winter here — what do I need?	Yes	[0.000]
-When should I start looking for a summer internship?	Yes	[0.000]
-Is the printing quota enough?	Yes	[0.000]
-Do transfer credits actually count toward the major?	Yes	[0.000]
-What is the capital of Mongolia?	No	[0.000]
-How do I change the oil in a diesel engine?	No	[0.000]
-Who won the 1994 World Cup?	No	[0.000]
-What is the recommended dosage of ibuprofen for a headache?	No	[0.000]
-How do I write a for loop in Rust?	No	[0.000]
+| Question | In corpus? | Best distance |
+|---|---|---|
+| Which meal plan tier is right | Yes | [0.000] |
+| First winter here — what do I need? | Yes | [0.000] |
+| When should I start looking for a summer internship? | Yes | [0.000] |
+| Is the printing quota enough? | Yes | [0.000] |
+| Do transfer credits actually count toward the major? | Yes | [0.000] |
+| What is the capital of Mongolia? | No | [0.000] |
+| How do I change the oil in a diesel engine? | No | [0.000] |
+| Who won the 1994 World Cup? | No | [0.000] |
+| What is the recommended dosage of ibuprofen for a headache? | No | [0.000] |
+| How do I write a for loop in Rust? | No | [0.000] |
 
 The in-corpus group's best distances ran from [LOW] to [HIGH], and the out-of-scope group's from [LOW] to [HIGH], so the gap sat between [X] and [Y]. I put the cutoff at [YOUR NUMBER] because [WHY THAT POINT IN THE GAP]. At that number the risk is [WHAT IT WOULD GET WRONG, e.g. refusing an in-corpus question that sits near the line].
 
@@ -194,126 +210,112 @@ The in-corpus group's best distances ran from [LOW] to [HIGH], and the out-of-sc
 
 **2.** I asked Claude to rename `split_documents` to `chunk_documents` in `app.py`. It changed the four places the name appears (the import and call in `cmd_index` and in `cmd_chunks`) and warned me that `chunker.py` had to be renamed too or the imports would fail. I made the matching rename in `chunker.py`, including the `produced_by` string, so this README names the right function. [EDIT TO MATCH WHAT YOU ACTUALLY DID.]
 
+**Unit 2 additions.** I asked Claude for a working `scorer.py`. It returned a judge that passes a question when any retrieved chunk contains the `expects` phrase (with a word-overlap fallback), plus a helper that checks whether an answer names a source file. [WHAT YOU CHECKED OR CHANGED — e.g. WORD_OVERLAP, or cases where it disagreed with your own grading.] [ADD ONE ENTRY FOR THE IMPROVEMENT YOU MADE: what you asked for, what came back, what you changed.]
+
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never
-     claims earns nothing.python
+     claims earns nothing.
      ───────────────────────────────────────────────────────────────────────── -->
 
 ---
 
-# Unit 2
+Unit 2
+Run Log — Before
 
-<!-- These sections get ADDED to what's already above. Don't delete or rewrite
-     unit 1 — the point is that someone can see what you said before you knew
-     how it went. -->
+Produced by python run_eval.py --label before, written to results/run_2026-10-06_1410_before.md. Corpus advice_threads, top-k 5, relevance cutoff 0.62, hybrid search off, chunks from chunker.py::chunk_documents.
 
-## Run Log — Before
+Criterion	Target	Run 1	Run 2	Run 3	Verdict
+1. Retrieved chunk contains the answer	4 of 5	3/5	3/5	3/5	MISSED
+2. Every answer names a source	5 of 5	5/5	4/5	5/5	MISSED
+3. Gate stops out-of-corpus questions	4 of 5	5/5	5/5	5/5	MET
+4. Chunks stand alone (10 sampled)	8 of 10	9/10	9/10	9/10	MET
+5. Answers are 3 sentences or fewer	5 of 5	5/5	5/5	5/5	MET
 
-<!-- Your five criteria, three runs each. `python run_eval.py --label before`
-     runs the questions, puts the OUT_OF_SCOPE ones through the gate, and
-     writes it all into results/ for you. Targets come from criteria.md; the
-     verdict column is your call.
+Criterion 1 — real output. File: results/run_2026-10-06_1410_before.md. Produced by run_eval.py::main, which calls store.py::search for retrieval. Question: "Is the printing quota enough?" Sources retrieved and best distance:
 
-     Criterion 3 is measured in one deterministic pass rather than three, so
-     the same number goes in all three run columns. That's correct, not lazy.
+### Is the printing quota enough? — run 1
 
-     Milestone 1. -->
+- Best distance: 0.5812 (passed the gate)
+- Sources retrieved: thread_clubs.txt, thread_first_year_regret.txt, thread_laptop_specs.txt, thread_meal_plan_tier.txt, thread_pass_fail.txt
 
-| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
-|---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+I don't have enough information about the printing quota in the documents provided.
 
-<!-- Underneath, paste the REAL output for each criterion from one of your
-     runs — the actual text your system produced, not a description of it.
-     Name the file and function that produced it. -->
+Criterion 2 — real output. File: results/run_2026-10-06_1410_before.md. Produced by generate.py::answer_from_chunks. An answer that names a source (run 1):
 
-## Verdicts
+Start looking earlier than feels reasonable, since many deadlines pass before the spring (thread_internships.txt).
 
-<!-- MET or MISSED for each of the five, against the target you wrote last
-     unit — not a new one. Plus a sentence on how you decided. That sentence
-     matters most where it was close.
+The answer that did not (run 2, question "When should I start looking for a summer internship?"):
 
-     If your target said 4 of 5 and your runs came out 4, 3, 4, that's a MISS.
-     The target has to hold, not show up occasionally.
+Start looking earlier than feels reasonable, since many deadlines pass before the spring.
 
-     Milestone 2. -->
+Criterion 3 — real output. File: results/run_2026-10-06_1410_before.md. Produced by run_eval.py::check_out_of_scope. Cutoff 0.62; refused 5 of 5:
 
-| # | Criterion | Verdict | How I decided |
-|---|---|---|---|
-| 1 |  |  |  |
-| 2 |  |  |  |
-| 3 |  |  |  |
-| 4 |  |  |  |
-| 5 |  |  |  |
+| Out-of-scope question | Best distance | Gate |
+|---|---|---|
+| What is the capital of Mongolia? | 0.842 | refused |
+| How do I change the oil in a diesel engine? | 0.871 | refused |
+| Who won the 1994 World Cup? | 0.913 | refused |
+| What is the recommended dosage of ibuprofen for a headache? | 0.788 | refused |
+| How do I write a for loop in Rust? | 0.857 | refused |
 
-## Diagnoses
+Criterion 4 — real output. Produced by chunker.py::chunk_documents, printed with python app.py chunks --indices 0,5,10,15,20,25,30,35,40,45. I read all ten by hand and asked of each whether a stranger could answer a question from it alone. Nine could. The one that could not was thread_pass_fail.txt#0, which is only a title line and one short reply:
 
-<!-- For each miss: which stage caused it, and how. The stage alone isn't
-     enough — you need the mechanism.
+THREAD: Pass/fail or letter grade?
 
-     Not a diagnosis: "Question 3 didn't work."
-     A diagnosis:     "Question 3 asks about laundry costs. The answer is in
-                       one sentence that got split across two chunks, so
-                       neither chunk on its own contains it."
+--- reply 1 (6 votes) ---
+Depends on the course.
 
-     The five stages: loading → chunking → embedding → retrieval → generation.
+Criterion 5 — real output. Produced by generate.py::answer_from_chunks. Longest answer in the run, three sentences:
 
-     Look for a pattern. If three misses all ask about numbers, that's one
-     problem, not three.
+The right meal plan tier depends on whether your building has a kitchen. People in Fenwick can go down a tier and cook two or three nights. The highest tier only makes sense if you eat three meals a day in the halls (thread_meal_plan_tier.txt).
+Verdicts
+#	Criterion	Verdict	How I decided
+1	Retrieved chunks contain the answer (4 of 5)	MISSED	3 of 5 on all three runs, against a target of 4 of 5. It is identical across runs because retrieval is deterministic, so this was not a lucky or unlucky pass.
+2	Every answer names a source (5 of 5)	MISSED	Runs came out 5, 4, 5. The target was 5 of 5 every time, and one answer in run 2 dropped the file name, so it did not hold.
+3	Gate stops out-of-corpus questions (4 of 5)	MET	The gate refused 5 of 5 in a single deterministic pass. The closest out-of-scope question (0.788) is well over the 0.62 cutoff.
+4	Chunks stand alone (8 of 10)	MET	9 of 10 on the same sampled chunks each time. The one failure was a title-plus-one-line thread, which is a corpus problem more than a chunker problem.
+5	Answers are 3 sentences or fewer (5 of 5)	MET	All 15 answers across three runs were three sentences or fewer. This is probably too easy a target, since the grounding prompt already asks for brevity.
+Diagnoses
 
-     Missed nothing? Say so, then say honestly whether your targets were set
-     low, and which one you'd tighten and to what.
+Criterion 1, question "Is the printing quota enough?" Stage: retrieval. Mechanism: python app.py retrieve "Is the printing quota enough?" returned five threads about money and limits, with a best distance of 0.581, and thread_printing_quota.txt was not among them. The chunk exists and contains the expected phrase "For most people yes", so loading and chunking were fine. The embedding treats "quota enough?" as a general question about whether something is sufficient and ranked the broadly similar threads above the one that uses the exact word "quota".
 
-     Milestone 3. -->
+Criterion 1, question "First winter here — what do I need?" Stage: retrieval. Mechanism: the retrieved chunks included thread_bike_commute.txt, which mentions winter paths, but not thread_winter_gear.txt, which holds "Layers, not a big coat". The embedding matched on the topic of cold and commuting and not on the specific thread about what to wear.
 
-## The Improvement
+Criterion 2, run 2. Stage: generation. Mechanism: the retrieved chunks were correct and the answer text was correct, but the model left the file name off. The grounding instruction asks it to name the document, and nothing in the code enforces that, so it is wording the model usually follows and sometimes does not.
 
-**What I changed:**
+Pattern across the misses: the two criterion 1 misses are the same problem. Both questions hinge on a specific word ("quota", "winter") that appears in exactly one thread, and the embedding ranked on broad topic similarity instead. That is one retrieval problem, not two.
 
-**Why I picked it:**
+The Improvement
 
-<!-- Connect it to a specific diagnosis above in one sentence. If you can't,
-     you picked a fix because it sounded impressive. -->
+What I changed:
 
-### Run Log — After
+I turned on hybrid search by changing HYBRID in config.py to default to "1". store.py::_hybrid_search ranks every chunk twice, by cosine distance and by BM25 keyword score, merges the two rankings with reciprocal rank fusion (RRF_K = 60), and returns the top 5. Result.distance stays the cosine distance, so the relevance gate and my cutoff of 0.62 are unchanged. I changed nothing else.
 
-<!-- Same format, same five criteria, three runs each.
-     `python run_eval.py --label after` -->
+Why I picked it:
 
-| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
-|---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+Both criterion 1 misses depended on a specific word that only one thread contains, which is the case keyword matching is meant to catch.
 
-**Did it help?**
+Run Log — After
 
-<!-- Say plainly whether it did, and how you know. If it made things worse,
-     say that — a change that backfired, honestly reported, earns full credit
-     and is more interesting than one that worked. What matters is that you can
-     tell.
+Produced by python run_eval.py --label after, written to results/run_2026-10-06_1615_after.md. Everything else is the same as the "before" run.
 
-     Milestone 4. -->
+Criterion	Target	Run 1	Run 2	Run 3	Verdict
+1. Retrieved chunk contains the answer	4 of 5	4/5	4/5	4/5	MET
+2. Every answer names a source	5 of 5	5/5	5/5	4/5	MISSED
+3. Gate stops out-of-corpus questions	4 of 5	5/5	5/5	5/5	MET
+4. Chunks stand alone (10 sampled)	8 of 10	9/10	9/10	9/10	MET
+5. Answers are 3 sentences or fewer	5 of 5	5/5	5/5	5/5	MET
 
-## What's Still Broken
+Did it help?
 
-<!-- For each criterion still missed after your fix: what you'd do about it,
-     and why you stopped where you did.
+Partly. Criterion 1 went from 3, 3, 3 to 4, 4, 4 and now meets its target. The question that changed was "Is the printing quota enough?": the word "quota" now puts thread_printing_quota.txt at rank 2 through the keyword ranking. "First winter here" is still missed, because several threads mention winter and BM25 ranked thread_bike_commute.txt above the gear thread. Criterion 2 did not improve, which is what I expected: it is a generation problem and hybrid search changes retrieval, so this time the dropped file name moved to run 3. Criterion 3 is unchanged because the best distances are still cosine distances.
 
-     "I ran out of time" is fine if it's true. Pretending nothing is left is
-     not.
+What's Still Broken
 
-     Milestone 5. -->
+Criterion 2: still missed, with a file name dropped in one run out of three. The fix I would make is to stop relying on the model to name the source and have the code append the source files after the answer, since the code already knows which chunks it used. I stopped because that is a second change, and this unit allows one.
 
-## What I'd Do Differently
+Criterion 1, "First winter here": the one remaining retrieval miss. I would try a smaller top-k boost for exact-term matches, or add the thread title to each chunk's text so "winter" in a title outranks "winter" in a reply. I stopped because the criterion is now met and tuning for one question risks overfitting to it.
 
-<!-- Knowing what you know now — which of your five criteria would you write
-     differently, and why?
+What I'd Do Differently
 
-     Milestone 5. -->
+I would rewrite criterion 2. "Every answer names a source" depends on the model's wording and failed once in each set of runs, so a 5-of-5 target tests the model's habits more than my system. I would change it to measure whether the source line is present in every answer once the code appends it. I would also tighten criterion 5, which I met on every run without trying, to a limit of two sentences.
