@@ -144,7 +144,7 @@ without reading what came before or after?
 <!-- One complete question and answer, pasted as text, with the source line
      visible. Milestone 4. -->
 
-**Question:** [YOUR QUESTION]
+**Question:** Which meal plan tier is right
 
 **Answer:**
 
